@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import pythonCode from "../utils/grayscale_image.py?raw";
 
-export default function ImageProcessor({ imageFile, pyodideInstance }) {
+export default function ImageProcessor({ imageFile, getPyodideInstance }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [grayscaledImageUrl, setGrayscaledImageUrl] = useState(null);
 
@@ -23,13 +23,15 @@ export default function ImageProcessor({ imageFile, pyodideInstance }) {
     }, [grayscaledImageUrl]);
 
     const grayscaleImage = async () => {
-        if (!imageFile || !pyodideInstance) {
+        if (!imageFile) {
             return;
         }
 
         setIsProcessing(true);
 
         try {
+            const pyodideInstance = await getPyodideInstance();
+
             const binaryImageData = await imageFile.arrayBuffer();
             const byteArray = new Uint8Array(binaryImageData);
 

@@ -5,7 +5,7 @@ import ImageProcessor from "./components/ImageProcessor";
 import { usePyodide } from "./usePyodide";
 
 function App() {
-  const { pyodideInstance, isPyodideReady, isLoading } = usePyodide();
+  const { getPyodideInstance } = usePyodide();
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
 
@@ -27,7 +27,6 @@ function App() {
   return (
     <>
       <div>
-        {isLoading && <div>Loading Python runtime...</div>}
         <ImageUpload onImageUpload={handleImageUpload} />
         {imageUrl && (
           <div>
@@ -35,8 +34,11 @@ function App() {
             <img src={imageUrl} alt="Uploaded" />
           </div>
         )}
-        {image && isPyodideReady && (
-          <ImageProcessor imageFile={image} pyodideInstance={pyodideInstance} />
+        {image && (
+          <ImageProcessor 
+            imageFile={image} 
+            getPyodide={getPyodideInstance}
+          />
         )}
       </div>
     </>

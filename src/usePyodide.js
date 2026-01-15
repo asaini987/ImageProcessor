@@ -1,31 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { loadPyodide } from "pyodide";
 
 export function usePyodide() {
     const [pyodideInstance, setPyodideInstance] = useState(null);
-    const [isPyodideReady, setIsPyodideReady] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const pyodidePromiseRef = useRef(null);
 
     useEffect(() => {
-        const pyodideInit = async () => {
+        const init = async () => {
             try {
-                const pyodideInstance = await loadPyodide({
+                const pyodide = await loadPyodide({
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.1/full/"
                 });
-                
-                await pyodideInstance.loadPackage("pillow");
-                
-                setPyodideInstance(pyodideInstance);
-                setIsPyodideReady(true);
+
+                await pyodide.loadPackage("pillow");
+                setPyodideInstance(pyodide);
+                return pyodide;
             } catch (error) {
                 console.error("Pyodide initialization error:", error);
-            } finally {
-                setIsLoading(false);
+                throw error;
             }
         };
 
-        pyodideInit();
+        pyodidePromiseRef.current = init();
     }, []);
 
-    return { pyodideInstance, isPyodideReady, isLoading };
+    const getPyodideInstance = async () => {
+        if (pyodideInstance) {
+            return pyodideInstance;
+        }
+
+        return await pyodidePromiseRef.current;
+    };
+
+    return { pyodideInstance, getPyodideInstance };
 }
