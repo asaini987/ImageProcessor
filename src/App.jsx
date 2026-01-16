@@ -2,10 +2,8 @@ import { useState } from 'react';
 import './App.css';
 import ImageUpload from "./components/ImageUpload";
 import ImageProcessor from "./components/ImageProcessor";
-import { usePyodide } from "./usePyodide";
 
 function App() {
-  const { getPyodideInstance } = usePyodide();
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
 
@@ -41,7 +39,6 @@ function App() {
           <ImageProcessor 
             imageFile={image}
             imageUrl={imageUrl}
-            getPyodideInstance={getPyodideInstance}
             onReset={handleReset}
           />
         )}

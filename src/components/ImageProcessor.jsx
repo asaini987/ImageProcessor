@@ -1,21 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { loadPyodide } from "pyodide";
 import pythonCode from "../utils/grayscale_image.py?raw";
 import "../App.css";
 
-export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance, onReset }) {
+export default function ImageProcessor({ imageFile, imageUrl, onReset }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [grayscaledImageUrl, setGrayscaledImageUrl] = useState(null);
 
+    const pyodideInstanceRef = useRef(null);
+    const pyodidePromiseRef = useRef(null);
+
+    // change image file URL
     useEffect(() => {
         setGrayscaledImageUrl((prevUrl) => {
             if (prevUrl) {
                 URL.revokeObjectURL(prevUrl);
             }
+
             return null;
         });
     }, [imageFile]);
 
-
+    // cleanup
     useEffect(() => {
         return () => {
             if (grayscaledImageUrl) {
@@ -23,6 +29,32 @@ export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance
             }
         };
     }, [grayscaledImageUrl]);
+
+    const getPyodideInstance = async () => {
+        // already loaded pyodide
+        if (pyodideInstanceRef.current) {
+            return pyodideInstanceRef.current;
+        }
+
+        // pyodide loading in progress
+        if (pyodidePromiseRef.current) {
+            return await pyodidePromiseRef.current;
+        }
+
+        // load pyodide
+        pyodidePromiseRef.current = (async () => {
+            const pyodide = await loadPyodide({
+                indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.1/full/"
+            });
+
+            await pyodide.loadPackage("pillow");
+            
+            pyodideInstanceRef.current = pyodide;
+            return pyodide;
+        })();
+
+        return await pyodidePromiseRef.current;
+    };
 
     const grayscaleImage = async () => {
         if (!imageFile) {
@@ -32,6 +64,7 @@ export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance
         setIsProcessing(true);
 
         try {
+            // load pyodide and convert image to base64 string
             const pyodideInstance = await getPyodideInstance();
 
             const binaryImageData = await imageFile.arrayBuffer();
@@ -43,7 +76,8 @@ export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance
             }
 
             const base64String = btoa(byteString);
-
+            
+            // convert image to grayscale
             pyodideInstance.globals.set("image_data", base64String);
             pyodideInstance.runPython(pythonCode);
             
@@ -53,6 +87,7 @@ export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance
                 throw new Error("Processed data is null or undefined");
             }
 
+            // convert base64 string to BLOB then set grayscale image URL
             const grayImgByteString = atob(b64GrayImg);
             const grayImgBytes = new Uint8Array(grayImgByteString.length);
             
@@ -63,6 +98,7 @@ export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance
             const blobType = imageFile.type ? imageFile.type : "image/png";
             const imgBlob = new Blob([grayImgBytes], { type: blobType });
             const grayscaledImageUrl = URL.createObjectURL(imgBlob);
+
             setGrayscaledImageUrl(grayscaledImageUrl);
         } catch (error) {
             console.error("Error converting image:", error);
@@ -72,12 +108,15 @@ export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance
     };
 
     const downloadImage = () => {
-        if (!grayscaledImageUrl) return;
-        
-        const link = document.createElement('a');
+        if (!grayscaledImageUrl) {
+            return;
+        }
+
+        const link = document.createElement("a");
         link.href = grayscaledImageUrl;
-        link.download = 'grayscale-image.png';
+        link.download = "grayscale-image.png";
         document.body.appendChild(link);
+
         link.click();
         document.body.removeChild(link);
     };
