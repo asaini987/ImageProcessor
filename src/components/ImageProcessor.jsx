@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { loadPyodide } from "pyodide";
 import pythonCode from "../utils/grayscale_image.py?raw";
-import "../App.css";
+import "./ImageProcessor.css";
 
 export default function ImageProcessor({ imageFile, imageUrl, onReset }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [grayscaledImageUrl, setGrayscaledImageUrl] = useState(null);
+    const [error, setError] = useState(null);
 
     const pyodideInstanceRef = useRef(null);
     const pyodidePromiseRef = useRef(null);
@@ -19,6 +20,7 @@ export default function ImageProcessor({ imageFile, imageUrl, onReset }) {
 
             return null;
         });
+        setError(null); // clear error when image file changes
     }, [imageFile]);
 
     // cleanup
@@ -61,6 +63,7 @@ export default function ImageProcessor({ imageFile, imageUrl, onReset }) {
             return;
         }
 
+        setError(null); // clear previous error on retry
         setIsProcessing(true);
 
         try {
@@ -102,6 +105,7 @@ export default function ImageProcessor({ imageFile, imageUrl, onReset }) {
             setGrayscaledImageUrl(grayscaledImageUrl);
         } catch (error) {
             console.error("Error converting image:", error);
+            setError(error.message || "Failed to convert image. Please try again.");
         } finally {
             setIsProcessing(false);
         }
@@ -138,6 +142,11 @@ export default function ImageProcessor({ imageFile, imageUrl, onReset }) {
                                     {isProcessing ? "Processing..." : "Convert to Grayscale"}
                                 </button>
                             </div>
+                            {error && (
+                                <div className="error-message">
+                                    {error}
+                                </div>
+                            )}
                         </>
                     )}
                     {grayscaledImageUrl && imageUrl && (

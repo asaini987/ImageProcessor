@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import './App.css';
+import { useState } from "react";
+import "./App.css";
 import ImageUpload from "./components/ImageUpload";
 import ImageProcessor from "./components/ImageProcessor";
 

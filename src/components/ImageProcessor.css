@@ -1,0 +1,75 @@
+.image-container {
+  margin: 2rem auto;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.image-container img, .comparison-item img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.comparison-container {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 2rem auto;
+  flex-wrap: wrap;
+  background-color: #ffffff;
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.comparison-item {
+  flex: 1;
+  min-width: 300px;
+  max-width: 600px;
+}
+
+.comparison-item h3 {
+  color: #000000;
+  margin-bottom: 1rem;
+  font-size: 1.2em;
+}
+
+.action-buttons-container {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem auto;
+  flex-wrap: wrap;
+}
+
+.action-buttons-container > button {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.action-buttons-container:not(:has(.action-button-item)) {
+  max-width: 600px;
+  width: 100%;
+}
+
+.action-button-item {
+  flex: 1;
+  min-width: 300px;
+  max-width: 600px;
+}
+
+.action-buttons-container .action-button-item {
+  display: flex;
+}
+
+.action-buttons-container .action-button-item button {
+  width: 100%;
+}
