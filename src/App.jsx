@@ -24,20 +24,25 @@ function App() {
     setImageUrl(URL.createObjectURL(file));
   };
 
+  const handleReset = () => {
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+    }
+    setImage(null);
+    setImageUrl(null);
+  };
+
   return (
     <>
       <div>
-        <ImageUpload onImageUpload={handleImageUpload} />
-        {imageUrl && (
-          <div>
-            <h3>Original Image</h3>
-            <img src={imageUrl} alt="Uploaded" />
-          </div>
-        )}
+        <h1 className="app-title">Image Processor</h1>
+        {!image && <ImageUpload onImageUpload={handleImageUpload} />}
         {image && (
           <ImageProcessor 
-            imageFile={image} 
-            getPyodide={getPyodideInstance}
+            imageFile={image}
+            imageUrl={imageUrl}
+            getPyodideInstance={getPyodideInstance}
+            onReset={handleReset}
           />
         )}
       </div>

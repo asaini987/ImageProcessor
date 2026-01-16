@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import pythonCode from "../utils/grayscale_image.py?raw";
+import "../App.css";
 
-export default function ImageProcessor({ imageFile, getPyodideInstance }) {
+export default function ImageProcessor({ imageFile, imageUrl, getPyodideInstance, onReset }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [grayscaledImageUrl, setGrayscaledImageUrl] = useState(null);
 
@@ -13,6 +14,7 @@ export default function ImageProcessor({ imageFile, getPyodideInstance }) {
             return null;
         });
     }, [imageFile]);
+
 
     useEffect(() => {
         return () => {
@@ -69,15 +71,61 @@ export default function ImageProcessor({ imageFile, getPyodideInstance }) {
         }
     };
 
+    const downloadImage = () => {
+        if (!grayscaledImageUrl) return;
+        
+        const link = document.createElement('a');
+        link.href = grayscaledImageUrl;
+        link.download = 'grayscale-image.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div>
             {imageFile && (
                 <>
-                    <button onClick={grayscaleImage} disabled={isProcessing}>
-                        {isProcessing ? "Processing..." : "Convert to Grayscale"}
-                    </button>
-                    {grayscaledImageUrl && (
-                        <img src={grayscaledImageUrl} alt="Processed grayscale" />
+                    {!grayscaledImageUrl && imageUrl && (
+                        <>
+                            <div className="image-container">
+                                <img src={imageUrl} alt="Original" />
+                            </div>
+                            <div className="action-buttons-container">
+                                <button onClick={onReset}>
+                                    Choose Another Image
+                                </button>
+                                <button onClick={grayscaleImage} disabled={isProcessing}>
+                                    {isProcessing ? "Processing..." : "Convert to Grayscale"}
+                                </button>
+                            </div>
+                        </>
+                    )}
+                    {grayscaledImageUrl && imageUrl && (
+                        <>
+                            <div className="comparison-container">
+                                <div className="comparison-item">
+                                    <h3>Original</h3>
+                                    <img src={imageUrl} alt="Original" />
+                                </div>
+                                <div className="comparison-item">
+                                    <h3>Grayscale</h3>
+                                    <img src={grayscaledImageUrl} alt="Processed grayscale" />
+                                </div>
+                            </div>
+                            <div className="action-buttons-container">
+                                <div className="action-button-item">
+                                    <button onClick={onReset}>
+                                        Choose Another Image
+                                    </button>
+                                </div>
+                                <div className="action-button-item">
+                                    <button onClick={downloadImage}>
+                                        Download
+                                    </button>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </>
             )}
